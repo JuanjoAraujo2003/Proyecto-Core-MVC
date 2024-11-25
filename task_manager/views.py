@@ -1,6 +1,6 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Project, Task
-from .forms import ProjectForm, TaskForm
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Project, Task, User
+from .forms import ProjectForm, TaskForm, EmployeeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 
@@ -46,3 +46,35 @@ def task_create(request, project_id):
     else:
         form = TaskForm()
     return render(request, 'task_form.html', {'form': form, 'project': project})
+
+def create_employee(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_worker = True
+            user.save()
+            return redirect('list_employees')
+    else:
+        form = EmployeeForm()
+    return render(request, 'employees.html', {'form': form})
+
+def list_employees(request):
+    employees = User.objects.filter(is_worker=True)
+    return render(request, 'employees_list.html', {'employees': employees})
+
+def delete_employees(request, employee_id):
+    employees = User.objects.filter(is_worker=True, id=employee_id)
+    employees.delete()
+    return redirect('list_employees')
+
+def edit_employee(request, employee_id):
+    employee = get_object_or_404(User, id=employee_id)
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            return redirect('list_employees')
+    else:
+        form = EmployeeForm(instance=employee)
+    return render(request, 'edit_employee.html', {'form': form})
