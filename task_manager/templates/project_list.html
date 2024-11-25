@@ -1,24 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background: #007bff;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .project-list li {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .project-list li:last-child {
+            border-bottom: none;
+        }
+
+        .project-list a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .project-list a:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #a71d2a;
+        }
+    </style>
 </head>
 <body>
-    <h1>Projects</h1>
-    <ul>
-        {% for project in projects %}
-            <li>
-                <a href="{% url 'project_tasks' project.id %}">{{ project.name }}</a> - {{ project.description }}
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'project_create' %}">Create a New Project</a>
-    <form method="post" action="{% url 'logout' %}"> {% csrf_token %}
-        <button>Logout</button>
-    </form>
+    <header>
+        <h1>Lista de Proyectos</h1>
+        <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button class="btn btn-danger">Logout</button>
+        </form>
+    </header>
 
-    <form method="post" action="{% url 'create_employee' %}"> {% csrf_token %}
-        <button>Create Employee</button>
-    </form>
+    <div class="container">
+        <ul class="project-list">
+            {% for project in projects %}
+                <li>
+                    <a href="{% url 'project_tasks' project.id %}">{{ project.name }}</a>
+                    <p>{{ project.description }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="actions">
+            <a href="{% url 'project_create' %}" class="btn">Create a New Project</a>
+            <form method="post" action="{% url 'create_employee' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button class="btn">Create Employee</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
