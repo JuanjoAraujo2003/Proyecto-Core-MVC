@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project List</title>
+</head>
+<body>
+    <h1>Projects</h1>
+    <ul>
+        {% for project in projects %}
+            <li>
+                <a href="{% url 'project_tasks' project.id %}">{{ project.name }}</a> - {{ project.description }}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'project_create' %}">Create a New Project</a>
+</body>
+</html>

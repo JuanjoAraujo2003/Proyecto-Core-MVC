@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>task list</title>
+</head>
+<body>
+    <h1>Tasks for {{ project.name }}</h1>
+<a href="{% url 'task_create' project.id %}">Create New Task</a>
+<ul>
+  {% for task in tasks %}
+    <li>
+      {{ task.title }} - {{ task.status }}
+    </li>
+  {% endfor %}
+</ul>
+<a href="{% url 'project_list' %}">Back to Projects</a>
+</body>
+</html>
