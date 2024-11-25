@@ -13,5 +13,8 @@
         {% endfor %}
     </ul>
     <a href="{% url 'project_create' %}">Create a New Project</a>
+    <form method="post" action="{% url 'logout' %}"> {% csrf_token %}
+        <button>Logout</button>
+    </form>
 </body>
 </html>

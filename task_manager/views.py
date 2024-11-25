@@ -1,9 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Project, Task
 from .forms import ProjectForm, TaskForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, authenticate
 
 # Create your views here.
 
+@login_required
 def project_list(request):
     if request.user.is_admin:
         projects = Project.objects.all()
