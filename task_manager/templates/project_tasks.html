@@ -97,6 +97,37 @@
         .btn-secondary:hover {
             background: #5a6268;
         }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #007bff;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .role-badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .admin {
+            background-color: #007bff;
+        }
+
+        .worker {
+            background-color: #28a745;
+        }
+
     </style>
 </head>
 <body>
@@ -115,7 +146,14 @@
                 <li>
                     <div>
                         <span class="task-title">{{ task.title }}</span>
-                        <p class="task-meta">Status: {{ task.status }} | Due: {{ task.due_date }}</p>
+                        <p>{{ task.priority }}</p>
+                        <p class="task-meta">Status: {{ task.status }} | Due: {{ task.end_date }}</p>
+                        <p>Asignned to: {{ task.assigned_to }}</p>
+                        <td>
+                            <a href="{% url 'task_edit' project.id task.id %}" class="role-badge admin">Edit</a>
+                            <a href="{% url 'task_delete' project.id task.id %}" class="role-badge worker" style="background-color: #dc3545;">Delete</a>
+                        </td>
+
                     </div>
                 </li>
             {% endfor %}

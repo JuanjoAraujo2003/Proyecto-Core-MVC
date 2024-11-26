@@ -105,7 +105,6 @@
                     <tr>
                         <th>#</th>
                         <th>Username</th>
-                        <th>Full Name</th>
                         <th>Email</th>
                         <th>Role</th>
                         <th>Actions</th>
@@ -116,7 +115,6 @@
                         <tr>
                             <td>{{ forloop.counter }}</td>
                             <td>{{ employee.username }}</td>
-                            <td>{{ employee.first_name }} {{ employee.last_name }}</td>
                             <td>{{ employee.email }}</td>
                             <td>
                                 {% if employee.is_admin %}

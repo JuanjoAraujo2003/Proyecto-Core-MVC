@@ -9,10 +9,21 @@ from django.contrib.auth import login, authenticate
 @login_required
 def project_list(request):
     if request.user.is_admin:
+        print("Usuario administrador")
         projects = Project.objects.all()
+        return render(request, 'project_list.html', {'projects': projects})
     else:
+        print("Usuario empleado")
+        # Filtra los proyectos con tareas asignadas al usuario
         projects = Project.objects.filter(tasks__assigned_to=request.user).distinct()
-    return render(request, 'project_list.html', {'projects': projects})
+
+        if projects.exists():
+            # Redirige al primer proyecto asignado
+            project_id = projects.first().id
+            return redirect('project_tasks', project_id=project_id)
+        else:
+            # Si no hay proyectos, muestra un mensaje
+            return render(request, 'project_list.html', {'message': 'No tasks assigned to you.'})
 
 def project_create(request):
     if request.method == 'POST':
@@ -32,7 +43,7 @@ def project_tasks(request, project_id):
 def task_list(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     tasks = project.tasks.all()
-    return render(request, 'task_list.html', {'project': project, 'tasks': tasks})
+    return render(request, 'project_tasks.html', {'project': project, 'tasks': tasks})
 
 def task_create(request, project_id):
     project = get_object_or_404(Project, id=project_id)
@@ -57,7 +68,7 @@ def create_employee(request):
             return redirect('list_employees')
     else:
         form = EmployeeForm()
-    return render(request, 'employees.html', {'form': form})
+    return render(request, 'employees_form.html', {'form': form})
 
 def list_employees(request):
     employees = User.objects.filter(is_worker=True)
@@ -78,3 +89,20 @@ def edit_employee(request, employee_id):
     else:
         form = EmployeeForm(instance=employee)
     return render(request, 'edit_employee.html', {'form': form})
+
+def delete_task(request, project_id , task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.delete()
+    return redirect('task_list', project_id=task.project.id)
+
+def edit_task(request, project_id ,task_id):
+    task = get_object_or_404(Task, id=task_id)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect('task_list', project_id=task.project.id)
+    else:
+        form = TaskForm(instance=task)
+    return render(request, 'edit_task.html', {'form': form, 'project_id': task.project.id})
+
