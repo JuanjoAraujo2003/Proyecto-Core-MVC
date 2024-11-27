@@ -3,6 +3,7 @@ from .models import Project, Task, User
 from .forms import ProjectForm, TaskForm, EmployeeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import AuthenticationForm
 
 # Create your views here.
 
@@ -23,7 +24,7 @@ def project_list(request):
             return redirect('project_tasks', project_id=project_id)
         else:
             # Si no hay proyectos, muestra un mensaje
-            return render(request, 'project_list.html', {'message': 'No tasks assigned to you.'})
+            return render(request, 'project_tasks.html', {'projects': None, 'tasks': None, 'message': 'No hay tareas asignadas a ti'})
 
 def project_create(request):
     if request.method == 'POST':
@@ -63,6 +64,7 @@ def create_employee(request):
         form = EmployeeForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
             user.is_worker = True
             user.save()
             return redirect('list_employees')
@@ -105,4 +107,42 @@ def edit_task(request, project_id ,task_id):
     else:
         form = TaskForm(instance=task)
     return render(request, 'edit_task.html', {'form': form, 'project_id': task.project.id})
+
+def register(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.is_worker = True
+            user.save()
+            return redirect('login')
+        else:
+            print("Formulario invalido")
+    else:
+        form = EmployeeForm()
+    return render(request, 'register.html', {'form': form})
+
+def login_view (request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            if user.is_admin:
+                return redirect('project_list')
+            elif user.is_worker:
+                projects = Project.objects.filter(tasks__assigned_to=user).distinct()
+                if projects.exists():
+                    return redirect('project_tasks', project_id=projects.first().id)
+                else:
+                    return redirect('project_list')
+        else:
+            print("Formulario invalido")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'login.html', {'form': form})
+
+
 

@@ -15,6 +15,6 @@ urlpatterns = [
     path('employees/', views.list_employees, name='list_employees'),
     path('employees/<int:employee_id>/', views.delete_employees, name='employee_delete'),
     path('employees/<int:employee_id>/edit/', views.edit_employee, name='employee_edit'),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', views.login_view , name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 ]

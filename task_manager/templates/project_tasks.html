@@ -132,36 +132,52 @@
 </head>
 <body>
     <header>
+        {% if project %}
         <h1>Tasks for Project: {{ project.name }}</h1>
-        <a href="{% url 'project_list' %}" class="btn btn-secondary">Back to Project List</a>
+            <a href="{% url 'project_list' %}" class="btn btn-secondary">Back to Project List</a>
+        {% else %}
+        <h1>Tasks for Project: No tienes un projecto asignado</h1>
+        {% endif %}
+
     </header>
 
     <div class="container">
-        <div class="project-details">
-            <p><strong>Project Description:</strong> {{ project.description }}</p>
-        </div>
+        {% if project %}
+            <div class="project-details">
+                <p><strong>Project Description:</strong> {{ project.description }}</p>
+            </div>
 
-        <ul class="task-list">
-            {% for task in tasks %}
-                <li>
-                    <div>
-                        <span class="task-title">{{ task.title }}</span>
-                        <p>{{ task.priority }}</p>
-                        <p class="task-meta">Status: {{ task.status }} | Due: {{ task.end_date }}</p>
-                        <p>Asignned to: {{ task.assigned_to }}</p>
-                        <td>
-                            <a href="{% url 'task_edit' project.id task.id %}" class="role-badge admin">Edit</a>
-                            <a href="{% url 'task_delete' project.id task.id %}" class="role-badge worker" style="background-color: #dc3545;">Delete</a>
-                        </td>
+            {% if tasks %}
+                <ul class="task-list">
+                    {% for task in tasks %}
+                        <li>
+                            <div>
+                                <span class="task-title"><strong>{{ task.title }}</strong></span>
+                                <p>{{ task.priority }}</p>
+                                <p class="task-meta">Status: {{ task.status }} | Due: {{ task.end_date }}</p>
+                                <p>Assigned to: {{ task.assigned_to }}</p>
+                            </div>
+                            <div>
+                                <a href="{% url 'task_edit' project.id task.id %}" class="btn">Edit</a>
+                                <a href="{% url 'task_delete' project.id task.id %}" class="btn" style="background-color: #dc3545;">Delete</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="no-tasks">
+                    <p>No tasks assigned to this project.</p>
+                </div>
+            {% endif %}
 
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
-
-        <div class="actions">
-            <a href="{% url 'task_create' project.id %}" class="btn">Add a New Task</a>
-        </div>
+            <div class="actions">
+                <a href="{% url 'task_create' project.id %}" class="btn">Add a New Task</a>
+            </div>
+        {% else %}
+            <div class="no-project">
+                <p>No project available. Please go back to the project list.</p>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>
