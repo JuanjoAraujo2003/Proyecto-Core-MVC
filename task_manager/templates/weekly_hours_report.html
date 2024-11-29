@@ -1,0 +1,17 @@
+     <h1>Weekly Hours Report</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Total Weekly Hours</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee, hours in report.items %}
+                <tr>
+                    <td>{{ employee }}</td>
+                    <td>{{ hours }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>

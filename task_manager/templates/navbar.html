@@ -1,0 +1,29 @@
+<header>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">Jira clone</a>
+            <ul class="navbar-nav">
+                {% if project %}
+                    <li class="nav-item"><span>Tasks for Project: {{ project.name }}</span></li>
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+{#                        <li class="nav-item"><a href="{% url 'admin_dashboard' %}" class="nav-link">Admin Dashboard</a></li>#}
+
+                    {% elif user.is_employee %}
+                        <li class="nav-item"><a href="{% url 'employee_dashboard' %}" class="nav-link">Employee Dashboard</a></li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button class="btn btn-danger">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                {% endif %}
+            </ul>
+
+    </nav>
+</header>

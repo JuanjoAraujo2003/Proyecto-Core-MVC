@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Optimización de Asignación de Tareas</h1>
+    <p>Proyecto: <strong>{{ project.name }}</strong></p>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <h2>Usuarios y Carga de Trabajo</h2>
+        <ul>
+            {% for worker, load in worker_load.items %}
+                <li>{{ worker.username }} (Rol: {{ worker.get_rol_display }}) - Tareas asignadas: {{ load }}</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Tareas Reasignadas</h2>
+        <ul>
+            {% for task, worker in reassigned_tasks %}
+                <li>
+                    Tarea: {{ task.name }} (Rol requerido: {{ task.get_required_rol_display }})
+                    asignada a {{ worker.username }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <h3>Tareas Sin Rol Requerido</h3>
+<ul>
+    {% for task in unassigned_tasks %}
+        {% if not task.required_rol %}
+            <li>Tarea: {{ task.title }} (Sin rol requerido definido)</li>
+        {% endif %}
+    {% endfor %}
+</ul>
+    {% endif %}
+{% endblock %}

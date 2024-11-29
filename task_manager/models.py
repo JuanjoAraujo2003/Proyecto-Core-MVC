@@ -6,18 +6,32 @@ from datetime import date
 class User(AbstractUser):
     is_admin = models.BooleanField(default=False)
     is_worker = models.BooleanField(default=True)
+    ROLES = (
+        ('designer', 'Diseñador'),
+        ('frontend', 'Frontend Developer'),
+        ('backend', 'Backend Developer'),
+        ('qa', 'QA Engineer'),
+    )
+    role = models.CharField(max_length=50, choices=ROLES, default='frontend')
 
     def __str__(self):
         return self.username
 
 class Project(models.Model):
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
     name = models.CharField(max_length=100)
     description = models.TextField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='low')
     created_at = models.DateTimeField(auto_now_add=True)
     end_date = models.DateField(default=date.today, verbose_name="End Date")
     created_by = models.ForeignKey(
         'User', on_delete=models.CASCADE, related_name='created_projects'
     )
+
 
     def __str__(self):
         return self.name
@@ -66,6 +80,9 @@ class Task(models.Model):
         default='pending',
         verbose_name="Status"
     )
+
+    estimated_hours = models.IntegerField(default=1)
+    required_role = models.CharField(max_length=50, default='frontend', choices=User.ROLES)
 
     def __str__(self):
         return f"{self.title} ({self.status})"

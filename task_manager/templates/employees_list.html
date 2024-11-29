@@ -1,104 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee List</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+{% extends 'base.html' %}
 
-        h1 {
-            margin-top: 20px;
-            color: #444;
-            text-align: center;
-        }
+{% block content %}
 
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 20px auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 12px 15px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background: #007bff;
-            color: #fff;
-            text-transform: uppercase;
-        }
-
-        tr:hover {
-            background: #f1f1f1;
-        }
-
-        .role-badge {
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: #fff;
-            font-weight: bold;
-            text-align: center;
-            display: inline-block;
-        }
-
-        .admin {
-            background-color: #007bff;
-        }
-
-        .worker {
-            background-color: #28a745;
-        }
-
-        .add-employee {
-            display: inline-block;
-            margin: 20px 0;
-            padding: 10px 20px;
-            background: #28a745;
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .add-employee:hover {
-            background: #218838;
-        }
-
-        .empty-message {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-    </style>
-</head>
-<body>
-    <h1>Employee List</h1>
+     <h1>Employee List</h1>
     <a href="{% url 'create_employee' %}" class="add-employee">Add New Employee</a>
-
-    <div class="container">
         {% if employees %}
             <table>
                 <thead>
@@ -136,6 +42,5 @@
                 <p>No employees found. Click <a href="{% url 'create_employee' %}" style="color: #007bff; text-decoration: none;">here</a> to add one.</p>
             </div>
         {% endif %}
-    </div>
-</body>
-</html>
+
+{% endblock %}

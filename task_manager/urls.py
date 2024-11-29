@@ -17,4 +17,5 @@ urlpatterns = [
     path('employees/<int:employee_id>/edit/', views.edit_employee, name='employee_edit'),
     path('login/', views.login_view , name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('projects/<int:project_id>/optimize_tasks/', views.optimize_tasks, name='optimize_tasks'),
 ]

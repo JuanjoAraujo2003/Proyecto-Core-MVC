@@ -1,183 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tasks for {{ project.name }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f4f4f9;
-            color: #333;
-        }
+{% extends 'base.html' %}
 
-        header {
-            background: #007bff;
-            color: #fff;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .project-details {
-            margin-bottom: 20px;
-        }
-
-        .task-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .task-list li {
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .task-list li:last-child {
-            border-bottom: none;
-        }
-
-        .task-title {
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        .task-meta {
-            font-size: 14px;
-            color: #555;
-        }
-
-        .actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn {
-            padding: 10px 15px;
-            background: #007bff;
-            color: #fff;
-            text-decoration: none;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            text-align: center;
-            transition: background 0.3s;
-        }
-
-        .btn:hover {
-            background: #0056b3;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 12px 15px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background: #007bff;
-            color: #fff;
-            text-transform: uppercase;
-        }
-
-        .role-badge {
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: #fff;
-            font-weight: bold;
-            text-align: center;
-            display: inline-block;
-        }
-
-        .admin {
-            background-color: #007bff;
-        }
-
-        .worker {
-            background-color: #28a745;
-        }
-
-    </style>
-</head>
-<body>
-    <header>
-        {% if project %}
+{% block content %}
+    {% if project %}
         <h1>Tasks for Project: {{ project.name }}</h1>
-            <a href="{% url 'project_list' %}" class="btn btn-secondary">Back to Project List</a>
+    {% else %}
+        <h1> No tienes un projecto asignado</h1>
+    {% endif %}
+    {% if project %}
+        <div class="project-details">
+            <p><strong>Project Description:</strong> {{ project.description }}</p>
+        </div>
+
+        {% if tasks %}
+            <ul class="tasks-list">
+                {% for task in tasks %}
+                    <li>
+                        <div class="card-task">
+                            <span class="task-title"><strong>{{ task.title }}</strong></span>
+                            <p>{{ task.priority }}</p>
+                            <p class="task-meta">Status: {{ task.status }} | Due: {{ task.end_date }}</p>
+                            <p>Assigned to: {{ task.assigned_to }}</p>
+                                                    <div class="">
+                            <a href="{% url 'task_edit' project.id task.id %}" class="btn">Edit</a>
+                            <a href="{% url 'task_delete' project.id task.id %}" class="btn"
+                               style="background-color: #dc3545;">Delete</a>
+                        </div>
+                        </div>
+
+                    </li>
+                {% endfor %}
+            </ul>
         {% else %}
-        <h1>Tasks for Project: No tienes un projecto asignado</h1>
+            <div class="no-tasks">
+                <p>No tasks assigned to this project.</p>
+            </div>
         {% endif %}
 
-    </header>
+        <div class="actions">
+            <a href="{% url 'task_create' project.id %}" class="btn">Add a New Task</a>
+            <a href="{% url 'project_list' %}" class="btn ">Back to Project List</a>
+        </div>
 
-    <div class="container">
-        {% if project %}
-            <div class="project-details">
-                <p><strong>Project Description:</strong> {{ project.description }}</p>
-            </div>
-
-            {% if tasks %}
-                <ul class="task-list">
-                    {% for task in tasks %}
-                        <li>
-                            <div>
-                                <span class="task-title"><strong>{{ task.title }}</strong></span>
-                                <p>{{ task.priority }}</p>
-                                <p class="task-meta">Status: {{ task.status }} | Due: {{ task.end_date }}</p>
-                                <p>Assigned to: {{ task.assigned_to }}</p>
-                            </div>
-                            <div>
-                                <a href="{% url 'task_edit' project.id task.id %}" class="btn">Edit</a>
-                                <a href="{% url 'task_delete' project.id task.id %}" class="btn" style="background-color: #dc3545;">Delete</a>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="no-tasks">
-                    <p>No tasks assigned to this project.</p>
-                </div>
-            {% endif %}
-
-            <div class="actions">
-                <a href="{% url 'task_create' project.id %}" class="btn">Add a New Task</a>
-            </div>
-        {% else %}
-            <div class="no-project">
-                <p>No project available. Please go back to the project list.</p>
-            </div>
-        {% endif %}
-    </div>
-</body>
-</html>
+    {% else %}
+        <div class="no-project">
+            <p>No project available. Please go back to the project list.</p>
+        </div>
+    {% endif %}
+{% endblock %}

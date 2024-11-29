@@ -12,7 +12,8 @@ def project_list(request):
     if request.user.is_admin:
         print("Usuario administrador")
         projects = Project.objects.all()
-        return render(request, 'project_list.html', {'projects': projects})
+        total_tasks, completed_tasks = project_progress(projects.first().id)
+        return render(request, 'project_list.html', {'projects': projects, 'total_tasks': total_tasks, 'completed_tasks': completed_tasks})
     else:
         print("Usuario empleado")
         # Filtra los proyectos con tareas asignadas al usuario
@@ -30,7 +31,9 @@ def project_create(request):
     if request.method == 'POST':
         form = ProjectForm(request.POST)
         if form.is_valid():
-            form.save()
+            projects  = form.save(commit=False)
+            projects.created_by = request.user
+            projects.save()
             return redirect('project_list')
     else:
         form = ProjectForm()
@@ -86,7 +89,8 @@ def edit_employee(request, employee_id):
     if request.method == 'POST':
         form = EmployeeForm(request.POST, instance=employee)
         if form.is_valid():
-            form.save()
+            emp = form.save()
+            emp.set_password(form.cleaned_data['password'])
             return redirect('list_employees')
     else:
         form = EmployeeForm(instance=employee)
@@ -143,6 +147,59 @@ def login_view (request):
         form = AuthenticationForm()
 
     return render(request, 'login.html', {'form': form})
+
+
+def project_progress(project_id):
+    project = get_object_or_404(Project, id=project_id)
+    tasks = project.tasks.all()
+    completed_tasks = tasks.filter(status='completed').count()
+    total_tasks = tasks.count()
+    progress = (completed_tasks / total_tasks) * 100
+    return total_tasks, completed_tasks
+
+def optimize_tasks(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    pending_tasks = project.tasks.filter(status='pending')
+
+    workers = User.objects.filter(is_worker=True).distinct()
+    if not workers.exists():
+        return render(request, 'optimize_tasks.html', {'project': project, 'message': 'No hay empleados disponibles'})
+
+    worker_load = {
+        worker: worker.tasks.filter(status='in_progress').count() for worker in workers
+    }
+
+    resigned_tasks = []
+    unnasigned_tasks = []
+    for task in pending_tasks:
+        if not task.required_role:
+            unnasigned_tasks.append(task)
+            continue
+
+        workers_with_role = [worker for worker in workers if worker.role == task.required_role]
+
+        if not workers_with_role:
+            unnasigned_tasks.append(task)
+            continue
+        less_loaded_worker = min(workers_with_role, key=lambda w: worker_load[w])
+
+        task.assigned_to = less_loaded_worker
+
+        task.status = 'in_progress'
+
+        task.save()
+
+        worker_load[less_loaded_worker] += 1
+
+        resigned_tasks.append((task, less_loaded_worker))
+
+    return render(request, 'optimize_task.html',
+                  {'project': project, 'resigned_tasks': resigned_tasks, 'unnasigned_tasks': unnasigned_tasks})
+
+
+
+
+
 
 
 
