@@ -159,7 +159,11 @@ def project_progress(project_id):
     tasks = project.tasks.all()
     completed_tasks = tasks.filter(status='completed').count()
     total_tasks = tasks.count()
-    progress = (completed_tasks / total_tasks) * 100
+    if total_tasks == 0:
+        progress = 0
+    else:
+        progress = (completed_tasks / total_tasks) * 100
+
     return total_tasks, completed_tasks
 
 def optimize_tasks(request, project_id):
