@@ -4,10 +4,12 @@ from .forms import ProjectForm, TaskForm, EmployeeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
 @login_required
+@csrf_exempt
 def project_list(request):
     if request.user.is_admin:
         print("Usuario administrador")
