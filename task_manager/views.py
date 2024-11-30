@@ -14,6 +14,9 @@ def project_list(request):
     if request.user.is_admin:
         print("Usuario administrador")
         projects = Project.objects.all()
+        if not projects.exists():
+            # Si no hay proyectos, renderiza una página con un mensaje
+            return render(request, 'project_list.html', {'projects': None, 'message': 'No hay proyectos registrados.'})
         total_tasks, completed_tasks = project_progress(projects.first().id)
         return render(request, 'project_list.html', {'projects': projects, 'total_tasks': total_tasks, 'completed_tasks': completed_tasks})
     else:
