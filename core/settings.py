@@ -35,7 +35,7 @@ if ENVIRONMENT == 'development':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = [ 'localhost', '127.0.0.1', 'proyecto-core-mvc-production.up.railway.app' ]
+ALLOWED_HOSTS = [ 'proyecto-core-mvc-production.up.railway.app' ,'127.0.0.1' ]
 
 CSRF_TRUSTED_ORIGINS = [ 'https://proyecto-core-mvc-production.up.railway.app' ]
 
