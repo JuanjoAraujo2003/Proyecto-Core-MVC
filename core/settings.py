@@ -37,7 +37,7 @@ else:
 
 ALLOWED_HOSTS = [ 'localhost', '127.0.0.1', 'proyecto-core-mvc-production.up.railway.app' ]
 
-CSRF_TURSTED_ORIGINS = [ 'https://proyecto-core-mvc-production.up.railway.app' ]
+CSRF_TRUSTED_ORIGINS = [ 'https://proyecto-core-mvc-production.up.railway.app' ]
 
 
 
