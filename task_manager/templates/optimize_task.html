@@ -1,36 +1,59 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Optimización de Asignación de Tareas</h1>
-    <p>Proyecto: <strong>{{ project.name }}</strong></p>
+<h1>Optimización de Tareas</h1>
+<p>Proyecto: <strong>{{ project.name }}</strong></p>
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% else %}
-        <h2>Usuarios y Carga de Trabajo</h2>
-        <ul>
-            {% for worker, load in worker_load.items %}
-                <li>{{ worker.username }} (Rol: {{ worker.get_rol_display }}) - Tareas asignadas: {{ load }}</li>
-            {% endfor %}
-        </ul>
+{% if hiring_decision %}
+    <h3>Recomendación</h3>
+    <p style="color: red;">{{ hiring_decision }}</p>
+{% endif %}
 
-        <h2>Tareas Reasignadas</h2>
-        <ul>
-            {% for task, worker in reassigned_tasks %}
-                <li>
-                    Tarea: {{ task.name }} (Rol requerido: {{ task.get_required_rol_display }})
-                    asignada a {{ worker.username }}
-                </li>
-            {% endfor %}
-        </ul>
+<h3>Trabajadores y Carga de Trabajo</h3>
+{% if worker_load %}
+    <ul>
+        {% for worker, load in worker_load.items %}
+            <li>{{ worker.username }} - Horas asignadas: {{ load }} / Límite: 40 horas</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay trabajadores disponibles.</p>
+{% endif %}
 
-        <h3>Tareas Sin Rol Requerido</h3>
-<ul>
-    {% for task in unassigned_tasks %}
-        {% if not task.required_rol %}
-            <li>Tarea: {{ task.title }} (Sin rol requerido definido)</li>
-        {% endif %}
-    {% endfor %}
-</ul>
-    {% endif %}
+<h3>Tareas Reasignadas</h3>
+{% if reassigned_tasks %}
+    <ul>
+        {% for task, worker in reassigned_tasks %}
+            <li>Tarea: {{ task.title }} asignada a {{ worker.username }} (Horas: {{ task.estimated_hours }})</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No se reasignaron tareas.</p>
+{% endif %}
+
+<h3>Tareas No Asignadas</h3>
+{% if unassigned_tasks %}
+    <ul>
+        {% for task in unassigned_tasks %}
+            <li>
+                Tarea: {{ task.title }} (Horas estimadas: {{ task.estimated_hours }}, Rol requerido: {{ task.get_required_rol_display }})
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay tareas no asignadas.</p>
+{% endif %}
+
+<h3>Tareas con Roles Faltantes</h3>
+{% if tasks_with_missing_roles %}
+    <ul>
+        {% for task in tasks_with_missing_roles %}
+            <li>
+                Tarea: {{ task.title }} (Rol requerido: {{ task.get_required_rol_display }})
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay tareas con roles faltantes.</p>
+{% endif %}
 {% endblock %}

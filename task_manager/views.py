@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 
 # Create your views here.
 
@@ -168,43 +169,94 @@ def project_progress(project_id):
 
 def optimize_tasks(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    pending_tasks = project.tasks.filter(status='pending')
+    pending_tasks = project.tasks.filter(Q(status='pending') | Q(assigned_to=None))
 
+    # Obtener todos los trabajadores relacionados al proyecto
     workers = User.objects.filter(is_worker=True).distinct()
+
+    if not pending_tasks.exists() and not workers.exists():
+        # No hay tareas ni empleados
+        hiring_decision = "No hay tareas pendientes ni empleados disponibles. Se recomienda contratar un freelancer."
+        return render(request, 'optimize_task.html', {
+            'project': project,
+            'worker_load': {},
+            'reassigned_tasks': [],
+            'unassigned_tasks': [],
+            'tasks_with_missing_roles': [],
+            'hiring_decision': hiring_decision,
+        })
+
     if not workers.exists():
-        return render(request, 'optimize_tasks.html', {'project': project, 'message': 'No hay empleados disponibles'})
+        # No hay empleados disponibles
+        hiring_decision = "No hay empleados disponibles. Se recomienda contratar un freelancer."
+        return render(request, 'optimize_task.html', {
+            'project': project,
+            'worker_load': {},
+            'reassigned_tasks': [],
+            'unassigned_tasks': list(pending_tasks),
+            'tasks_with_missing_roles': [],
+            'hiring_decision': hiring_decision,
+        })
 
-    worker_load = {
-        worker: worker.tasks.filter(status='in_progress').count() for worker in workers
-    }
 
-    resigned_tasks = []
-    unnasigned_tasks = []
+    MAX_HOURS_PER_WORKER = 40
+    worker_load = {worker: sum(task.estimated_hours for task in worker.tasks.filter(status='in_progress', project=project)) for worker in workers}
+
+    reassigned_tasks = []
+    unassigned_tasks = []
+    tasks_with_missing_roles = []
+    extra_freelance_hours = 0  # Horas adicionales que requieren freelancers
+
     for task in pending_tasks:
+
         if not task.required_role:
-            unnasigned_tasks.append(task)
+            unassigned_tasks.append(task)
             continue
+
 
         workers_with_role = [worker for worker in workers if worker.role == task.required_role]
 
         if not workers_with_role:
-            unnasigned_tasks.append(task)
+
+            tasks_with_missing_roles.append(task)
             continue
-        less_loaded_worker = min(workers_with_role, key=lambda w: worker_load[w])
 
-        task.assigned_to = less_loaded_worker
 
-        task.status = 'in_progress'
+        suitable_workers = [worker for worker in workers_with_role if worker_load[worker] + task.estimated_hours <= MAX_HOURS_PER_WORKER]
 
-        task.save()
+        if suitable_workers:
+            least_loaded_worker = min(suitable_workers, key=lambda w: worker_load[w])
+            task.assigned_to = least_loaded_worker
+            task.status = 'in_progress'
+            task.save()
 
-        worker_load[less_loaded_worker] += 1
+            # Actualizar la carga y registrar la tarea
+            worker_load[least_loaded_worker] += task.estimated_hours
+            reassigned_tasks.append((task, least_loaded_worker))
+        else:
+            # Si no hay trabajadores disponibles dentro del límite, sumar horas a freelancers
+            extra_freelance_hours += task.estimated_hours
+            unassigned_tasks.append(task)
 
-        resigned_tasks.append((task, less_loaded_worker))
+    # Evaluar si se necesita un freelancer o un nuevo empleado
+    if tasks_with_missing_roles:
+        hiring_decision = f"Hay {len(tasks_with_missing_roles)} tareas con roles que no tiene ningún empleado. Se recomienda contratar trabajadores con esos roles."
+    elif extra_freelance_hours > 0:
+        if extra_freelance_hours < 20:  # contratar freelancers
+            hiring_decision = f"Se recomienda contratar un freelancer para {extra_freelance_hours} horas adicionales."
+        else:
+            hiring_decision = f"Se recomienda contratar un nuevo empleado. Horas adicionales requeridas: {extra_freelance_hours}."
+    else:
+        hiring_decision = "Todas las tareas fueron asignadas correctamente."
 
-    return render(request, 'optimize_task.html',
-                  {'project': project, 'resigned_tasks': resigned_tasks, 'unnasigned_tasks': unnasigned_tasks})
-
+    return render(request, 'optimize_task.html', {
+        'project': project,
+        'worker_load': worker_load,
+        'reassigned_tasks': reassigned_tasks,
+        'unassigned_tasks': unassigned_tasks,
+        'tasks_with_missing_roles': tasks_with_missing_roles,
+        'hiring_decision': hiring_decision,
+    })
 
 
 
