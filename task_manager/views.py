@@ -6,6 +6,10 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from rest_framework import viewsets, permissions
+from rest_framework.permissions import AllowAny
+from .serializers import ProjectSerializer, TaskSerializer, ProjectDetailSerializer, TaskDetailSerializer
+
 
 # Create your views here.
 
@@ -257,6 +261,30 @@ def optimize_tasks(request, project_id):
         'tasks_with_missing_roles': tasks_with_missing_roles,
         'hiring_decision': hiring_decision,
     })
+
+# ViewSet para Projects
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+# ViewSet para Tasks
+class TaskViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+
+
+
+
 
 
 
