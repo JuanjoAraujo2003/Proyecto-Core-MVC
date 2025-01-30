@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Project, Task, User
+from .models import Project, Task, User, TaskAssignmentContext, AssignToLeastBusyWorker, AssignByTaskPriority
 from .forms import ProjectForm, TaskForm, EmployeeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
@@ -279,6 +279,21 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
+
+def assign_task_strategy(request, project_id, task_id):
+    project = get_object_or_404(Project, id=project_id)
+    task = get_object_or_404(Task, id=task_id, project=project)
+
+    # Selecciona una estrategia de asignación
+    if task.priority == 'high':
+        strategy = AssignByTaskPriority()
+    else:
+        strategy = AssignToLeastBusyWorker()
+
+    context = TaskAssignmentContext(strategy)
+    context.execute_assignment(task)
+
+    return redirect('task_list', project_id=project.id)
 
 
 

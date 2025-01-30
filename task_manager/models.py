@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
+from abc import ABC, abstractmethod
 # Create your models here.
 
 class User(AbstractUser):
@@ -86,3 +87,55 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.status})"
+
+## Singleton
+class AppConfigSingleton(models.Model):
+    site_name = models.CharField(max_length=255, default="Task Manager")
+    maintenance_mode = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Garantiza que siempre haya una única instancia
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_instance(cls):
+        return cls.objects.get_or_create(pk=1)[0]  # Devuelve siempre la misma instancia
+
+    class Meta:
+        verbose_name = "Configuración"
+        verbose_name_plural = "Configuración"
+
+    def __str__(self):
+        return f"{self.site_name} - {'Maintenance Mode' if self.maintenance_mode else 'Running'}"
+
+# Patrón Strategy para asignación de tareas
+class TaskAssignmentStrategy(ABC):
+    @abstractmethod
+    def assign_task(self, task):
+        pass
+
+# Asignar al trabajador con menos tareas
+class AssignToLeastBusyWorker(TaskAssignmentStrategy):
+    def assign_task(self, task):
+        workers = User.objects.filter(is_worker=True).annotate(task_count=models.Count('tasks')).order_by('task_count')
+        if workers.exists():
+            task.assigned_to = workers.first()
+            task.status = 'in_progress'
+            task.save()
+
+# Asignar según la prioridad de la tarea
+class AssignByTaskPriority(TaskAssignmentStrategy):
+    def assign_task(self, task):
+        workers = User.objects.filter(is_worker=True, role=task.required_role).order_by('tasks__priority')
+        if workers.exists():
+            task.assigned_to = workers.last()  # El trabajador con menos tareas de alta prioridad
+            task.status = 'in_progress'
+            task.save()
+
+# Contexto que usa una estrategia
+class TaskAssignmentContext:
+    def __init__(self, strategy: TaskAssignmentStrategy):
+        self.strategy = strategy
+
+    def execute_assignment(self, task):
+        self.strategy.assign_task(task)
