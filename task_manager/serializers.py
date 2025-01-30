@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'date_joined'
         ]
 
-# Serializer básico para el modelo Project
+# Serializer para el modelo Project
 class ProjectSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)  # Serializa el usuario que creó el proyecto
     tasks = serializers.PrimaryKeyRelatedField(many=True, read_only=True)  # Serializa las tareas relacionadas
@@ -22,7 +22,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'created_by', 'tasks'
         ]
 
-# Serializer básico para el modelo Task
+# Serializer para el modelo Task
 class TaskSerializer(serializers.ModelSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())  # Relación con Project
     assigned_to = UserSerializer(read_only=True)  # Serializa el usuario asignado
@@ -34,7 +34,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'end_date', 'priority', 'status', 'estimated_hours', 'required_role'
         ]
 
-# Serializer detallado para Project (incluye tareas anidadas)
+# Serializer detallado para Project
 class ProjectDetailSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
     tasks = TaskSerializer(many=True, read_only=True)  # Serializa todas las tareas relacionadas
@@ -46,7 +46,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'created_by', 'tasks'
         ]
 
-# Serializer detallado para Task (incluye proyecto anidado)
+# Serializer detallado para Task
 class TaskDetailSerializer(serializers.ModelSerializer):
     project = ProjectSerializer(read_only=True)  # Serializa el proyecto relacionado
     assigned_to = UserSerializer(read_only=True)

@@ -132,7 +132,7 @@ class AssignByTaskPriority(TaskAssignmentStrategy):
             task.status = 'in_progress'
             task.save()
 
-# Contexto que usa una estrategia
+# Contexto del Strategy
 class TaskAssignmentContext:
     def __init__(self, strategy: TaskAssignmentStrategy):
         self.strategy = strategy
